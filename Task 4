@@ -1,0 +1,122 @@
+import time
+
+def print_grid(grid):
+    """Prints the Sudoku grid in a formatted way"""
+    print("\nSudoku Grid:")
+    for i in range(9):
+        if i % 3 == 0 and i != 0:
+            print("-" * 21)
+        for j in range(9):
+            if j % 3 == 0 and j != 0:
+                print("|", end=" ")
+            val = grid[i][j]
+            print(val if val != 0 else ".", end=" ")
+        print()
+    print()
+
+
+def find_empty(grid):
+    """Finds an empty cell in the grid"""
+    for i in range(9):
+        for j in range(9):
+            if grid[i][j] == 0:
+                return i, j
+    return None
+
+
+def is_valid(grid, num, pos):
+    """Checks if 'num' can be placed at position 'pos'"""
+    row, col = pos
+
+    # Check row
+    if num in grid[row]:
+        return False
+
+    # Check column
+    if num in [grid[i][col] for i in range(9)]:
+        return False
+
+    # Check 3x3 box
+    box_x, box_y = col // 3, row // 3
+    for i in range(box_y * 3, box_y * 3 + 3):
+        for j in range(box_x * 3, box_x * 3 + 3):
+            if grid[i][j] == num:
+                return False
+
+    return True
+
+
+def solve(grid, show_steps=False):
+    """Solves the Sudoku using backtracking"""
+    find = find_empty(grid)
+    if not find:
+        return True
+    row, col = find
+
+    for num in range(1, 10):
+        if is_valid(grid, num, (row, col)):
+            grid[row][col] = num
+
+            if show_steps:
+                print_grid(grid)
+                time.sleep(0.05)
+
+            if solve(grid, show_steps):
+                return True
+
+            grid[row][col] = 0  # Backtrack
+
+    return False
+
+
+def input_sudoku():
+    """Takes Sudoku input dynamically from the user"""
+    print("Enter your Sudoku puzzle row by row (use 0 for empty cells):")
+    grid = []
+    for i in range(9):
+        while True:
+            row_input = input(f"Row {i + 1}: ").strip()
+            if len(row_input) == 9 and all(ch.isdigit() for ch in row_input):
+                row = [int(ch) for ch in row_input]
+                grid.append(row)
+                break
+            else:
+                print("Invalid input! Please enter exactly 9 digits (0–9).")
+    return grid
+
+
+def main():
+    print("=== Sudoku Solver ===")
+    print("1. Use sample puzzle")
+    print("2. Enter your own puzzle")
+    choice = input("Enter your choice (1 or 2): ")
+
+    if choice == "2":
+        sudoku_grid = input_sudoku()
+    else:
+        sudoku_grid = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ]
+
+    print("\nUnsolved Sudoku:")
+    print_grid(sudoku_grid)
+
+    step_view = input("Show solving steps? (y/n): ").lower() == "y"
+
+    if solve(sudoku_grid, show_steps=step_view):
+        print("\nSolved Sudoku:")
+        print_grid(sudoku_grid)
+    else:
+        print("No solution exists for the given puzzle.")
+
+
+if __name__ == "__main__":
+    main()
